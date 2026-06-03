@@ -12,6 +12,7 @@ const alertesRouter      = require('./routes/alertes');
 const importRouter       = require('./routes/import');
 const utilisateursRouter = require('./routes/utilisateurs');
 const sim                = require('./services/simulationService');
+const { evaluerToutesRegles } = require('./services/alerteService');
 
 const app  = express();
 const PORT = process.env.PORT || 4010;
@@ -42,7 +43,12 @@ app.use((err, _, res, __) => {
 
 app.listen(PORT, async () => {
   console.log(`EnergIO API démarrée sur http://localhost:${PORT}`);
-  await sim.initFromDB(); // démarre les capteurs virtuels persistés en DB
+  await sim.initFromDB();
+  // Évaluation automatique des règles toutes les heures
+  setInterval(async () => {
+    const alertes = await evaluerToutesRegles();
+    if (alertes.length > 0) console.log(`[alertes] ${alertes.length} alerte(s) créée(s)`);
+  }, 60 * 60 * 1000);
 });
 
 module.exports = app;

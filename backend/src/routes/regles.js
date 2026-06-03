@@ -6,7 +6,7 @@ const { requireRole } = require('../middleware/roles');
 const { evaluerToutesRegles } = require('../services/alerteService');
 
 const router = express.Router();
-router.use(requireAuth);
+router.use(requireAuth, requireRole('gestionnaire'));
 
 // GET /regles
 router.get('/', async (req, res) => {
@@ -66,10 +66,12 @@ router.put('/:id', requireRole('gestionnaire'),
     try {
       const { rows } = await pool.query(`
         UPDATE regle_alerte
-        SET nom=$1, site_id=$2, compteur_id=$3, type_regle=$4,
-            condition=$5, niveau=$6, active=$7
+        SET nom=$1,
+            site_id=COALESCE($2::int, site_id),
+            compteur_id=COALESCE($3::int, compteur_id),
+            type_regle=$4, condition=$5, niveau=$6, active=$7
         WHERE id=$8 RETURNING *
-      `, [nom, site_id || null, compteur_id || null, type_regle,
+      `, [nom, site_id ?? null, compteur_id ?? null, type_regle,
           JSON.stringify(condition), niveau || 'warning', active !== false, req.params.id]);
       if (rows.length === 0) return res.status(404).json({ error: 'Règle non trouvée' });
       res.json(rows[0]);

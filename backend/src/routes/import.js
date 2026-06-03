@@ -5,6 +5,8 @@ const pool      = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const { requireRole } = require('../middleware/roles');
 
+const { evaluerToutesRegles } = require('../services/alerteService');
+
 const router = express.Router();
 router.use(requireAuth, requireRole('gestionnaire'));
 
@@ -111,8 +113,11 @@ router.post('/releves', upload.single('fichier'), async (req, res) => {
       nb_total: records.length,
       nb_ok: ok,
       nb_erreurs: erreurs.length,
-      erreurs: erreurs.slice(0, 20), // max 20 erreurs retournées
+      erreurs: erreurs.slice(0, 20),
     });
+
+    // Évaluation des règles en arrière-plan après import
+    evaluerToutesRegles().catch(err => console.error('[alertes] post-import:', err.message));
 
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
