@@ -9,7 +9,7 @@ router.use(requireAuth);
 // GET /alertes?traitee=false&limit=50
 router.get('/', async (req, res) => {
   try {
-    const { traitee, niveau, limit = 100 } = req.query;
+    const { traitee, niveau, site_id, limit = 100 } = req.query;
     const conditions = [];
     const params = [];
 
@@ -20,6 +20,10 @@ router.get('/', async (req, res) => {
     if (niveau) {
       params.push(niveau);
       conditions.push(`a.niveau = $${params.length}`);
+    }
+    if (site_id) {
+      params.push(parseInt(site_id));
+      conditions.push(`a.site_id = $${params.length}`);
     }
 
     params.push(Math.min(parseInt(limit) || 100, 500));

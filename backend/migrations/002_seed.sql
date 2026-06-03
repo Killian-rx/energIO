@@ -51,7 +51,7 @@ DECLARE
 BEGIN
   -- Compteur 1 : Électricité Siège Social (~28 000 kWh/mois base)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '5 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '5 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 1.4 WHEN 2  THEN 1.35 WHEN 3  THEN 1.15
       WHEN 4  THEN 0.95 WHEN 5  THEN 0.85 WHEN 6  THEN 0.90
@@ -66,7 +66,7 @@ BEGIN
 
   -- Compteur 2 : Gaz Siège Social (~18 000 kWh/mois hiver)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '5 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '5 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 2.8 WHEN 2  THEN 2.6 WHEN 3  THEN 1.8
       WHEN 4  THEN 0.8 WHEN 5  THEN 0.3 WHEN 6  THEN 0.1
@@ -81,7 +81,7 @@ BEGIN
 
   -- Compteur 3 : Électricité Entrepôt (~45 000 kWh/mois)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '6 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '6 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 1.3 WHEN 2  THEN 1.25 WHEN 3  THEN 1.1
       WHEN 4  THEN 0.95 WHEN 5  THEN 0.90 WHEN 6  THEN 0.95
@@ -96,7 +96,7 @@ BEGIN
 
   -- Compteur 4 : Fioul Entrepôt (~2000 L/mois hiver)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '6 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '6 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 3.0 WHEN 2  THEN 2.8 WHEN 3  THEN 1.9
       WHEN 4  THEN 0.5 WHEN 5  THEN 0.1 WHEN 6  THEN 0.05
@@ -111,7 +111,7 @@ BEGIN
 
   -- Compteur 5 : Électricité Médiathèque (~9 000 kWh/mois)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '7 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '7 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 1.35 WHEN 2  THEN 1.3 WHEN 3  THEN 1.1
       WHEN 4  THEN 0.9 WHEN 5  THEN 0.8 WHEN 6  THEN 0.85
@@ -126,7 +126,7 @@ BEGIN
 
   -- Compteur 6 : Gaz Médiathèque (~6 000 kWh/mois hiver)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '7 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '7 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 3.2 WHEN 2  THEN 3.0 WHEN 3  THEN 2.0
       WHEN 4  THEN 0.6 WHEN 5  THEN 0.15 WHEN 6  THEN 0.05
@@ -141,7 +141,7 @@ BEGIN
 
   -- Compteur 7 : Électricité École (~6 500 kWh/mois — fermeture été)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '8 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '8 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 1.4 WHEN 2  THEN 1.35 WHEN 3  THEN 1.2
       WHEN 4  THEN 1.1 WHEN 5  THEN 1.05 WHEN 6  THEN 0.9
@@ -156,7 +156,7 @@ BEGIN
 
   -- Compteur 8 : Gaz École
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '8 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '8 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 3.5 WHEN 2  THEN 3.2 WHEN 3  THEN 2.2
       WHEN 4  THEN 1.0 WHEN 5  THEN 0.4 WHEN 6  THEN 0.1
@@ -171,7 +171,7 @@ BEGIN
 
   -- Compteur 9 : Électricité Résidence (parties communes ~8 000 kWh/mois)
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '9 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '9 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 1.25 WHEN 2  THEN 1.2 WHEN 3  THEN 1.05
       WHEN 4  THEN 0.95 WHEN 5  THEN 0.85 WHEN 6  THEN 0.90
@@ -186,7 +186,7 @@ BEGIN
 
   -- Compteur 10 : Gaz Résidence chauffage collectif
   FOR v_mois IN 0..17 LOOP
-    v_date := DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '9 days';
+    v_date := LEAST(DATE_TRUNC('month', NOW()) - (v_mois || ' months')::INTERVAL + INTERVAL '9 days', NOW() - INTERVAL '1 day');
     v_saison := CASE EXTRACT(MONTH FROM v_date)
       WHEN 1  THEN 3.4 WHEN 2  THEN 3.1 WHEN 3  THEN 2.1
       WHEN 4  THEN 0.8 WHEN 5  THEN 0.2 WHEN 6  THEN 0.05

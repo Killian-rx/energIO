@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import LoginPage        from './pages/LoginPage';
 import DashboardPage    from './pages/DashboardPage';
 import SitesPage        from './pages/SitesPage';
+import SiteDetailPage   from './pages/SiteDetailPage';
 import CompteurPage     from './pages/CompteurPage';
 import IndicateursPage  from './pages/IndicateursPage';
 import ReglesPage       from './pages/ReglesPage';
@@ -26,6 +27,11 @@ function AppRoutes() {
       <Route path="/sites" element={
         <ProtectedRoute>
           <Layout><SitesPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/sites/:id" element={
+        <ProtectedRoute>
+          <Layout><SiteDetailPage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/compteurs" element={

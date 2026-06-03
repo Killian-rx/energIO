@@ -84,7 +84,7 @@ export default function Layout({ children }) {
 
       {/* User footer */}
       <div className="px-4 py-4 border-t border-blue-800">
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">
             {user?.prenom?.[0]}{user?.nom?.[0]}
           </div>
@@ -92,10 +92,10 @@ export default function Layout({ children }) {
             <p className="text-sm font-medium truncate">{user?.prenom} {user?.nom}</p>
             <p className="text-xs text-blue-300 capitalize">{user?.role}</p>
           </div>
+          <button onClick={handleLogout} title="Déconnexion" className="p-1.5 text-blue-300 hover:text-red-400 rounded transition-colors">
+            <LogOut size={18} />
+          </button>
         </div>
-        <button onClick={handleLogout} className="w-full flex items-center gap-2 text-sm text-blue-200 hover:text-white py-1.5 px-2 rounded hover:bg-blue-800 transition-colors">
-          <LogOut size={16} /> Déconnexion
-        </button>
       </div>
     </aside>
   );

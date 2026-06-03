@@ -62,23 +62,42 @@ router.get('/synthese', async (req, res) => {
   }
 });
 
-// GET /indicateurs/evolution?type_energie=electricite&nb_mois=12
+// Whitelist période → (interval PG, trunc, format label)
+const PERIODES = {
+  '1h':  { interval: '1 hour',    trunc: 'minute', fmt: 'HH24:MI' },
+  '6h':  { interval: '6 hours',   trunc: 'hour',   fmt: 'HH24"h"' },
+  '24h': { interval: '24 hours',  trunc: 'hour',   fmt: 'DD/MM HH24"h"' },
+  '7d':  { interval: '7 days',    trunc: 'day',    fmt: 'DD/MM' },
+  '1M':  { interval: '1 month',   trunc: 'month',  fmt: 'YYYY-MM' },
+  '3M':  { interval: '3 months',  trunc: 'month',  fmt: 'YYYY-MM' },
+  '6M':  { interval: '6 months',  trunc: 'month',  fmt: 'YYYY-MM' },
+  '12M': { interval: '12 months', trunc: 'month',  fmt: 'YYYY-MM' },
+  '24M': { interval: '24 months', trunc: 'month',  fmt: 'YYYY-MM' },
+};
+
+// GET /indicateurs/evolution?type_energie=electricite&periode=12M&site_id=X
 router.get('/evolution', async (req, res) => {
   try {
-    const { type_energie = 'electricite', nb_mois = 12 } = req.query;
+    const { type_energie = 'electricite', periode = '12M', nb_mois, site_id } = req.query;
+    // Compatibilité nb_mois legacy
+    const periodeKey = PERIODES[periode] ? periode : (nb_mois ? `${nb_mois}M` : '12M');
+    const cfg = PERIODES[periodeKey] || PERIODES['12M'];
+
+    const params = [type_energie];
+    const siteFilter = site_id ? `AND c.site_id = $${params.push(parseInt(site_id))}` : '';
     const { rows } = await pool.query(`
       SELECT
-        TO_CHAR(DATE_TRUNC('month', r.date_releve), 'YYYY-MM') AS mois,
-        SUM(r.valeur) AS total,
-        c.type_energie
+        TO_CHAR(DATE_TRUNC('${cfg.trunc}', r.date_releve), '${cfg.fmt}') AS mois,
+        SUM(r.valeur) AS total
       FROM releve r
       JOIN compteur c ON r.compteur_id = c.id
       WHERE r.valide = TRUE
-        AND r.date_releve >= DATE_TRUNC('month', NOW()) - ($1 || ' months')::INTERVAL
-        AND c.type_energie = $2
-      GROUP BY DATE_TRUNC('month', r.date_releve), c.type_energie
-      ORDER BY mois ASC
-    `, [parseInt(nb_mois), type_energie]);
+        AND r.date_releve >= NOW() - INTERVAL '${cfg.interval}'
+        AND c.type_energie = $1
+        ${siteFilter}
+      GROUP BY DATE_TRUNC('${cfg.trunc}', r.date_releve)
+      ORDER BY DATE_TRUNC('${cfg.trunc}', r.date_releve) ASC
+    `, params);
 
     const points = rows.map((r, i) => ({ x: i, y: parseFloat(r.total) }));
     const tendance = regressionLineaire(points);
@@ -233,6 +252,56 @@ router.get('/tendances', async (req, res) => {
     });
 
     res.json(resultats);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /indicateurs/site/:id — KPIs d'un bâtiment spécifique
+router.get('/site/:id', async (req, res) => {
+  try {
+    const siteId = parseInt(req.params.id);
+
+    const { rows: [consoMois] } = await pool.query(`
+      SELECT
+        COALESCE(SUM(r.valeur) FILTER (WHERE c.type_energie='electricite'), 0) AS elec,
+        COALESCE(SUM(r.valeur) FILTER (WHERE c.type_energie='gaz'), 0)          AS gaz,
+        COALESCE(SUM(r.valeur) FILTER (WHERE c.type_energie='eau'), 0)          AS eau
+      FROM releve r
+      JOIN compteur c ON r.compteur_id = c.id
+      WHERE r.valide = TRUE
+        AND c.site_id = $1
+        AND r.date_releve >= DATE_TRUNC('month', NOW())
+    `, [siteId]);
+
+    const { rows: [consoPrec] } = await pool.query(`
+      SELECT COALESCE(SUM(r.valeur), 0) AS elec
+      FROM releve r
+      JOIN compteur c ON r.compteur_id = c.id
+      WHERE r.valide = TRUE
+        AND c.site_id = $1
+        AND c.type_energie = 'electricite'
+        AND r.date_releve >= DATE_TRUNC('month', NOW()) - INTERVAL '1 month'
+        AND r.date_releve < DATE_TRUNC('month', NOW())
+    `, [siteId]);
+
+    const variation = calculerVariation(parseFloat(consoMois.elec), parseFloat(consoPrec.elec));
+
+    const { rows: [stats] } = await pool.query(`
+      SELECT
+        (SELECT COUNT(*) FROM compteur WHERE site_id=$1 AND actif=TRUE) AS nb_compteurs,
+        (SELECT COUNT(*) FROM alerte   WHERE site_id=$1 AND traitee=FALSE) AS nb_alertes
+    `, [siteId]);
+
+    res.json({
+      conso_elec_mois: parseFloat(consoMois.elec),
+      conso_gaz_mois:  parseFloat(consoMois.gaz),
+      conso_eau_mois:  parseFloat(consoMois.eau),
+      variation_pct:   variation,
+      nb_compteurs:    parseInt(stats.nb_compteurs),
+      nb_alertes:      parseInt(stats.nb_alertes),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });

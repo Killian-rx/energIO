@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Building2, Plus, Pencil, Trash2, Loader2, MapPin, Ruler } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,7 +40,7 @@ function SiteModal({ site, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-lg font-semibold">{site?.id ? 'Modifier le bâtiment' : 'Nouveau bâtiment'}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
@@ -101,6 +102,7 @@ function SiteModal({ site, onClose, onSaved }) {
 
 export default function SitesPage() {
   const { isGestionnaire, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [sites, setSites]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal]   = useState(null); // null | 'new' | site object
@@ -128,8 +130,8 @@ export default function SitesPage() {
     <div className="max-w-7xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bâtiments</h1>
-          <p className="text-gray-500 text-sm mt-1">{sites.length} site{sites.length !== 1 ? 's' : ''} actif{sites.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl font-semibold text-gray-900">Bâtiments</h1>
+          <p className="text-gray-400 text-sm mt-1">{sites.length} site{sites.length !== 1 ? 's' : ''}</p>
         </div>
         {isGestionnaire && (
           <button onClick={() => setModal('new')} className="btn-primary">
@@ -143,11 +145,15 @@ export default function SitesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {sites.map(site => (
-            <div key={site.id} className="card hover:shadow-md transition-shadow">
+            <div
+              key={site.id}
+              onClick={() => navigate(`/sites/${site.id}`)}
+              className="card hover:shadow-md transition-shadow cursor-pointer"
+            >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Building2 size={20} className="text-blue-700" />
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Building2 size={18} className="text-blue-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">{site.nom}</h3>
@@ -158,11 +164,17 @@ export default function SitesPage() {
                 </div>
                 {isGestionnaire && (
                   <div className="flex gap-1">
-                    <button onClick={() => setModal(site)} className="p-1.5 text-gray-400 hover:text-blue-600 rounded">
+                    <button
+                      onClick={e => { e.stopPropagation(); setModal(site); }}
+                      className="p-1.5 text-gray-400 hover:text-blue-600 rounded"
+                    >
                       <Pencil size={15} />
                     </button>
                     {isAdmin && (
-                      <button onClick={() => handleDelete(site.id)} className="p-1.5 text-gray-400 hover:text-red-600 rounded">
+                      <button
+                        onClick={e => { e.stopPropagation(); handleDelete(site.id); }}
+                        className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+                      >
                         <Trash2 size={15} />
                       </button>
                     )}
@@ -170,27 +182,24 @@ export default function SitesPage() {
                 )}
               </div>
 
-              <div className="space-y-1.5 text-sm text-gray-600">
+              <div className="space-y-1.5 text-sm text-gray-500">
                 {(site.ville || site.adresse) && (
                   <div className="flex items-center gap-2">
-                    <MapPin size={14} className="shrink-0 text-gray-400" />
+                    <MapPin size={13} className="shrink-0 text-gray-400" />
                     <span className="truncate">{[site.adresse, site.ville, site.code_postal].filter(Boolean).join(' · ')}</span>
                   </div>
                 )}
                 {site.surface && (
                   <div className="flex items-center gap-2">
-                    <Ruler size={14} className="shrink-0 text-gray-400" />
+                    <Ruler size={13} className="shrink-0 text-gray-400" />
                     <span>{parseFloat(site.surface).toLocaleString('fr-FR')} m²</span>
                   </div>
                 )}
-                {site.usage && (
-                  <p className="text-xs text-gray-500 italic truncate">{site.usage}</p>
-                )}
               </div>
 
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
                 <span>{site.nb_compteurs} compteur{site.nb_compteurs !== '1' ? 's' : ''}</span>
-                {site.annee_construction && <span>Construction {site.annee_construction}</span>}
+                {site.annee_construction && <span>{site.annee_construction}</span>}
               </div>
             </div>
           ))}

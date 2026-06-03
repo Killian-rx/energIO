@@ -34,20 +34,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-blue-950 px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-400 rounded-2xl mb-4 shadow-lg">
-            <Zap size={32} className="text-blue-900" />
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-yellow-400 rounded-xl mb-4">
+            <Zap size={28} className="text-blue-900" />
           </div>
-          <h1 className="text-3xl font-bold text-white">EnergIO</h1>
-          <p className="text-blue-200 mt-1">Plateforme de gestion énergétique</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">EnergIO</h1>
+          <p className="text-blue-400 text-sm mt-1">Gestion énergétique</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Connexion</h2>
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-5">Connexion</h2>
 
           {error && (
             <div className="flex items-center gap-2 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-3 mb-4 text-sm">
@@ -89,26 +89,24 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Comptes démo */}
-          <div className="mt-6 pt-5 border-t border-gray-100">
-            <p className="text-xs text-gray-500 mb-3 font-medium">Comptes de démonstration :</p>
-            <div className="grid grid-cols-3 gap-2">
+          <div className="mt-5 pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-400 mb-2">Accès rapide — démo</p>
+            <div className="flex gap-2">
               {[
-                { role: 'admin',        label: 'Admin',        color: 'bg-purple-100 text-purple-700 hover:bg-purple-200' },
-                { role: 'gestionnaire', label: 'Gestionnaire', color: 'bg-blue-100 text-blue-700 hover:bg-blue-200' },
-                { role: 'utilisateur',  label: 'Utilisateur',  color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
-              ].map(({ role, label, color }) => (
+                { role: 'admin',        label: 'Admin' },
+                { role: 'gestionnaire', label: 'Gestionnaire' },
+                { role: 'utilisateur',  label: 'Utilisateur' },
+              ].map(({ role, label }) => (
                 <button
                   key={role}
                   type="button"
                   onClick={() => fillDemo(role)}
-                  className={`text-xs py-1.5 px-2 rounded-lg font-medium transition-colors ${color}`}
+                  className="text-xs py-1 px-2.5 rounded border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 transition-colors"
                 >
                   {label}
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-center">Mot de passe : <code className="bg-gray-100 px-1 rounded">password</code></p>
           </div>
         </div>
       </div>

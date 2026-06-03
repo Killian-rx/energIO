@@ -4,9 +4,9 @@ import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 
 const NIVEAU_CONFIG = {
-  critical: { icon: AlertOctagon, color: 'text-red-500', bg: 'bg-red-50 border-red-200', badge: 'badge-critical' },
-  warning:  { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 border-amber-200', badge: 'badge-warning' },
-  info:     { icon: Info,          color: 'text-blue-500', bg: 'bg-blue-50 border-blue-200',  badge: 'badge-info' },
+  critical: { icon: AlertOctagon, color: 'text-red-500', bg: 'bg-red-50 border-red-100', badge: 'badge-critical', label: 'Critique' },
+  warning:  { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 border-amber-100', badge: 'badge-warning', label: 'Alerte' },
+  info:     { icon: Info,          color: 'text-blue-500', bg: 'bg-blue-50 border-blue-100',  badge: 'badge-info', label: 'Info' },
 };
 
 export default function AlertesPage() {
@@ -14,7 +14,7 @@ export default function AlertesPage() {
   const [alertes, setAlertes] = useState([]);
   const [stats,   setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
-  const [filter,  setFilter]  = useState('non_traitees'); // non_traitees | toutes
+  const [filter,  setFilter]  = useState('non_traitees');
   const [niveau,  setNiveau]  = useState('');
 
   async function load() {
@@ -42,25 +42,22 @@ export default function AlertesPage() {
   return (
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Alertes</h1>
-          <p className="text-gray-500 text-sm mt-1">Événements déclenchés par les règles de surveillance</p>
-        </div>
+        <h1 className="text-xl font-semibold text-gray-900">Alertes</h1>
       </div>
 
       {/* Statistiques */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { label: 'En attente',     value: stats.en_attente,    color: 'text-red-600 bg-red-50',     border: 'border-red-200' },
-            { label: 'Critiques',      value: stats.critiques,     color: 'text-red-800 bg-red-100',    border: 'border-red-300' },
-            { label: 'Warnings',       value: stats.warnings,      color: 'text-amber-800 bg-amber-50', border: 'border-amber-200' },
-            { label: 'Info',           value: stats.infos,         color: 'text-blue-700 bg-blue-50',   border: 'border-blue-200' },
-            { label: 'Cette semaine',  value: stats.cette_semaine, color: 'text-gray-700 bg-gray-50',   border: 'border-gray-200' },
+            { label: 'En attente',    value: stats.en_attente,    accent: 'text-red-600' },
+            { label: 'Critiques',     value: stats.critiques,     accent: 'text-red-500' },
+            { label: 'Alertes',       value: stats.warnings,      accent: 'text-amber-600' },
+            { label: 'Info',          value: stats.infos,         accent: 'text-blue-600' },
+            { label: 'Cette semaine', value: stats.cette_semaine, accent: 'text-gray-600' },
           ].map(s => (
-            <div key={s.label} className={`card py-3 px-4 border ${s.border} ${s.color}`}>
-              <p className="text-2xl font-bold">{parseInt(s.value) || 0}</p>
-              <p className="text-xs mt-0.5 opacity-80">{s.label}</p>
+            <div key={s.label} className="card py-3 px-4">
+              <p className={`text-2xl font-bold ${s.accent}`}>{parseInt(s.value) || 0}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -75,7 +72,7 @@ export default function AlertesPage() {
           ].map(f => (
             <button key={f.val} onClick={() => setFilter(f.val)}
               className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                filter === f.val ? 'bg-white shadow text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900'
+                filter === f.val ? 'bg-white shadow text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-800'
               }`}>
               {f.label}
             </button>
@@ -85,49 +82,50 @@ export default function AlertesPage() {
           <Filter size={14} className="text-gray-400" />
           <select className="input w-36" value={niveau} onChange={e => setNiveau(e.target.value)}>
             <option value="">Tous niveaux</option>
-            <option value="critical">Critical</option>
-            <option value="warning">Warning</option>
+            <option value="critical">Critique</option>
+            <option value="warning">Alerte</option>
             <option value="info">Info</option>
           </select>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 size={32} className="animate-spin text-blue-600" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={28} className="animate-spin text-blue-600" /></div>
       ) : alertes.length === 0 ? (
-        <div className="card text-center py-16">
-          <CheckCircle size={40} className="text-emerald-500 mx-auto mb-3" />
-          <p className="font-medium text-gray-700">Aucune alerte {filter === 'non_traitees' ? 'en attente' : ''}</p>
-          <p className="text-sm text-gray-400 mt-1">Toutes les règles sont dans les normes</p>
+        <div className="card py-10 flex items-center gap-3">
+          <CheckCircle size={18} className="text-emerald-500 shrink-0" />
+          <p className="text-sm text-gray-500">
+            {filter === 'non_traitees' ? 'Aucune alerte en attente' : 'Aucune alerte enregistrée'}
+          </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {alertes.map(a => {
             const cfg = NIVEAU_CONFIG[a.niveau] || NIVEAU_CONFIG.info;
             const Icon = cfg.icon;
             return (
               <div key={a.id} className={`card border ${cfg.bg} flex items-start gap-4 p-4`}>
-                <Icon size={20} className={`shrink-0 mt-0.5 ${cfg.color}`} />
+                <Icon size={18} className={`shrink-0 mt-0.5 ${cfg.color}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2 flex-wrap">
-                    <span className={cfg.badge}>{a.niveau}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={cfg.badge}>{cfg.label}</span>
                     {a.site_nom && <span className="badge-gray">{a.site_nom}</span>}
                     {a.compteur_nom && <span className="badge-gray">{a.compteur_nom}</span>}
                   </div>
                   <p className="text-sm text-gray-800 mt-1.5 font-medium">{a.message}</p>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
                     <span>{new Date(a.created_at).toLocaleString('fr-FR')}</span>
                     {a.valeur_detectee !== null && (
-                      <span>Valeur : <strong>{parseFloat(a.valeur_detectee).toLocaleString('fr-FR')}</strong></span>
+                      <span>Valeur : <strong className="text-gray-600">{parseFloat(a.valeur_detectee).toLocaleString('fr-FR')}</strong></span>
                     )}
                     {a.seuil !== null && (
-                      <span>Seuil : <strong>{parseFloat(a.seuil).toLocaleString('fr-FR')}</strong></span>
+                      <span>Seuil : <strong className="text-gray-600">{parseFloat(a.seuil).toLocaleString('fr-FR')}</strong></span>
                     )}
                     {a.regle_nom && <span>Règle : {a.regle_nom}</span>}
                   </div>
                   {a.traitee && (
-                    <p className="text-xs text-emerald-700 mt-1">
-                      ✓ Traité le {new Date(a.traitee_at).toLocaleString('fr-FR')} par {a.traite_par_nom || '—'}
+                    <p className="text-xs text-emerald-700 mt-1.5">
+                      Traité le {new Date(a.traitee_at).toLocaleString('fr-FR')}{a.traite_par_nom ? ` par ${a.traite_par_nom}` : ''}
                     </p>
                   )}
                 </div>
