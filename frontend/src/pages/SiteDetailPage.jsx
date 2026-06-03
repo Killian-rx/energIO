@@ -14,8 +14,24 @@ import { useAuth } from '../contexts/AuthContext';
 const TYPE_LABELS = { bureau: 'Bureau', erp: 'ERP', technique: 'Technique', logement: 'Logement', autre: 'Autre' };
 
 const ENERGIE_UNITS = {
-  electricite: 'kWh', gaz: 'm³', eau: 'm³', fioul: 'L', bois: 'kg', autre: 'kWh',
+  electricite: 'kWh', gaz: 'kWh', eau: 'm³', fioul: 'L', bois: 'kg', autre: 'kWh',
 };
+
+function fmtY(v) {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000)     return `${(v / 1_000).toFixed(0)}k`;
+  if (v >= 10)        return Math.round(v);
+  if (v >= 1)         return parseFloat(v.toFixed(1));
+  if (v > 0)          return parseFloat(v.toFixed(2));
+  return 0;
+}
+
+function fmtVal(v, unit) {
+  const n = v >= 100  ? Math.round(v).toLocaleString('fr-FR')
+          : v >= 1    ? parseFloat(v.toFixed(2)).toLocaleString('fr-FR')
+          : parseFloat(v.toFixed(3)).toLocaleString('fr-FR');
+  return `${n} ${unit}`;
+}
 
 const PERIODS = [
   { label: '1h',  value: '1h' },
@@ -132,9 +148,10 @@ export default function SiteDetailPage() {
   if (!site) return null;
 
   const chartData = evolution?.donnees?.map(d => ({
-    mois: d.mois.slice(5),
-    total: Math.round(d.total),
+    mois:  d.mois,
+    total: parseFloat(parseFloat(d.total).toFixed(3)),
   })) || [];
+  const unit = ENERGIE_UNITS[typeEnergie] || 'kWh';
 
   return (
     <div className="max-w-7xl space-y-6">
@@ -225,10 +242,10 @@ export default function SiteDetailPage() {
               <LineChart data={chartData} margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                 <XAxis dataKey="mois" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={fmtY} />
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }}
-                  formatter={v => [`${v.toLocaleString('fr-FR')} ${ENERGIE_UNITS[typeEnergie] || 'kWh'}`, typeEnergie]}
+                  formatter={v => [fmtVal(v, unit), typeEnergie]}
                 />
                 <Line
                   type="monotone" dataKey="total"

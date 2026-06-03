@@ -10,14 +10,34 @@ import {
 import api from '../api/client';
 
 const PERIODS = [
-  { label: '1h',   value: '1h' },
-  { label: '6h',   value: '6h' },
-  { label: '24h',  value: '24h' },
-  { label: '7j',   value: '7d' },
-  { label: '1M',   value: '1M' },
-  { label: '3M',   value: '3M' },
-  { label: '12M',  value: '12M' },
+  { label: '1h',  value: '1h' },
+  { label: '6h',  value: '6h' },
+  { label: '24h', value: '24h' },
+  { label: '7j',  value: '7d' },
+  { label: '1M',  value: '1M' },
+  { label: '3M',  value: '3M' },
+  { label: '12M', value: '12M' },
 ];
+
+const SHORT_PERIODS = new Set(['1h','6h','24h','7d']);
+
+// Formateur Y-axis adaptatif — évite le "0k" pour les petites valeurs
+function fmtY(v) {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000)     return `${(v / 1_000).toFixed(0)}k`;
+  if (v >= 10)        return Math.round(v);
+  if (v >= 1)         return parseFloat(v.toFixed(1));
+  if (v > 0)          return parseFloat(v.toFixed(2));
+  return 0;
+}
+
+// Formateur tooltip — précision adaptée à la magnitude
+function fmtVal(v, unit) {
+  const n = v >= 100  ? Math.round(v).toLocaleString('fr-FR')
+          : v >= 1    ? parseFloat(v.toFixed(2)).toLocaleString('fr-FR')
+          : parseFloat(v.toFixed(3)).toLocaleString('fr-FR');
+  return `${n} ${unit}`;
+}
 
 function PeriodSelector({ value, onChange }) {
   return (
@@ -54,7 +74,7 @@ function StatCard({ title, value, unit, icon: Icon, color, trend, sub }) {
             trend > 0 ? 'text-red-500' : trend < 0 ? 'text-emerald-600' : 'text-gray-400'
           }`}>
             {trend > 0 ? <TrendingUp size={11} /> : trend < 0 ? <TrendingDown size={11} /> : <Minus size={11} />}
-            {trend !== null ? `${trend > 0 ? '+' : ''}${trend}% vs mois préc.` : ''}
+            {`${trend > 0 ? '+' : ''}${trend}% vs mois préc.`}
           </span>
         )}
       </div>
@@ -67,7 +87,7 @@ export default function DashboardPage() {
   const [evolution, setEvolution] = useState(null);
   const [alertes,   setAlertes]   = useState([]);
   const [loading,   setLoading]   = useState(true);
-  const [periode, setPeriode] = useState('12M');
+  const [periode,   setPeriode]   = useState('12M');
 
   useEffect(() => {
     Promise.all([
@@ -83,23 +103,21 @@ export default function DashboardPage() {
   }, [periode]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 size={28} className="animate-spin text-blue-600" />
-      </div>
-    );
+    return <div className="flex items-center justify-center h-64"><Loader2 size={28} className="animate-spin text-blue-600" /></div>;
   }
 
+  // Conserver la précision — ne pas arrondir à l'entier
   const chartData = evolution?.donnees?.map(d => ({
-    mois: d.mois,
-    total: Math.round(d.total),
+    mois:  d.mois,
+    total: parseFloat(parseFloat(d.total).toFixed(2)),
   })) || [];
+
+  const isShort = SHORT_PERIODS.has(periode);
 
   return (
     <div className="space-y-6 max-w-7xl">
       <h1 className="text-xl font-semibold text-gray-900">Tableau de bord</h1>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="Bâtiments"
@@ -128,11 +146,12 @@ export default function DashboardPage() {
           value={evolution?.tendance?.label || '—'}
           icon={evolution?.tendance?.a > 0 ? TrendingUp : TrendingDown}
           color={evolution?.tendance?.a > 0 ? 'bg-red-500' : 'bg-emerald-500'}
-          sub={evolution?.tendance ? `${evolution.tendance.a > 0 ? '+' : ''}${evolution.tendance.a} kWh/mois` : undefined}
+          sub={!isShort && evolution?.tendance
+            ? `${evolution.tendance.a > 0 ? '+' : ''}${evolution.tendance.a} kWh/mois`
+            : undefined}
         />
       </div>
 
-      {/* Chart + Alertes */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="card xl:col-span-2">
           <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
@@ -149,20 +168,16 @@ export default function DashboardPage() {
               <LineChart data={chartData} margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                 <XAxis dataKey="mois" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={fmtY} />
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 1px 6px rgba(0,0,0,.08)', fontSize: 12 }}
-                  formatter={v => [`${v.toLocaleString('fr-FR')} kWh`, 'Électricité']}
+                  formatter={v => [fmtVal(v, 'kWh'), 'Électricité']}
                 />
-                <Line
-                  type="monotone" dataKey="total"
-                  stroke="#2563eb" strokeWidth={2}
-                  dot={false} activeDot={{ r: 4, fill: '#2563eb' }}
-                />
+                <Line type="monotone" dataKey="total" stroke="#2563eb" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#2563eb' }} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-12">Aucune donnée</p>
+            <p className="text-sm text-gray-400 text-center py-12">Aucune donnée sur cette période</p>
           )}
         </div>
 
