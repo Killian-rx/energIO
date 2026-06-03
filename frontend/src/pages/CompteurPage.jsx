@@ -3,7 +3,6 @@ import { Gauge, Plus, Pencil, Trash2, Loader2, Filter } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 
-const ENERGIE_ICONS = { electricite: '⚡', gaz: '🔥', eau: '💧', fioul: '🛢️', bois: '🪵', autre: '⚙️' };
 const ENERGIE_COLORS = {
   electricite: 'bg-yellow-100 text-yellow-800',
   gaz:         'bg-orange-100 text-orange-800',
@@ -60,7 +59,7 @@ function CompteurModal({ compteur, sites, onClose, onSaved }) {
               <label className="label">Énergie *</label>
               <select className="input" value={form.type_energie} onChange={e => setForm(f => ({...f, type_energie: e.target.value}))}>
                 {['electricite','gaz','eau','fioul','bois','autre'].map(t => (
-                  <option key={t} value={t}>{ENERGIE_ICONS[t]} {t}</option>
+                  <option key={t} value={t}>{t}</option>
                 ))}
               </select>
             </div>
@@ -171,7 +170,7 @@ export default function CompteurPage() {
                   <td className="text-gray-600">{c.site_nom}</td>
                   <td>
                     <span className={`badge ${ENERGIE_COLORS[c.type_energie]}`}>
-                      {ENERGIE_ICONS[c.type_energie]} {c.type_energie}
+                      {c.type_energie}
                     </span>
                   </td>
                   <td className="capitalize text-gray-600">{c.type_compteur}</td>
