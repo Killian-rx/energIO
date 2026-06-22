@@ -37,34 +37,10 @@ CREATE TABLE IF NOT EXISTS site (
   updated_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ─── Zones (sous-ensembles d'un bâtiment) ───────────────────────────────────
-CREATE TABLE IF NOT EXISTS zone (
-  id       SERIAL PRIMARY KEY,
-  site_id  INTEGER NOT NULL REFERENCES site(id) ON DELETE CASCADE,
-  nom      VARCHAR(200) NOT NULL,
-  surface  NUMERIC(10,2),
-  usage    VARCHAR(100),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ─── Équipements ────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS equipement (
-  id               SERIAL PRIMARY KEY,
-  site_id          INTEGER NOT NULL REFERENCES site(id) ON DELETE CASCADE,
-  zone_id          INTEGER REFERENCES zone(id) ON DELETE SET NULL,
-  nom              VARCHAR(200) NOT NULL,
-  type_equipement  VARCHAR(50),
-  puissance_kw     NUMERIC(10,3),
-  date_installation DATE,
-  actif            BOOLEAN DEFAULT TRUE,
-  created_at       TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- ─── Compteurs ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS compteur (
   id            SERIAL PRIMARY KEY,
   site_id       INTEGER NOT NULL REFERENCES site(id) ON DELETE CASCADE,
-  equipement_id INTEGER REFERENCES equipement(id) ON DELETE SET NULL,
   nom           VARCHAR(200) NOT NULL,
   type_energie  VARCHAR(30) NOT NULL
                 CHECK (type_energie IN ('electricite','gaz','eau','fioul','bois','autre')),

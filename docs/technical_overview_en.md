@@ -25,7 +25,7 @@ Three user roles are enforced at both the API (middleware) and UI (route guards)
 - **User** (utilisateur) — read-only access to data and indicators
 
 ### Building & Meter Registry
-A structured data model connects buildings (sites) → optional zones → equipment → meters (compteurs). Each meter has an energy type (`electricity`, `gas`, `water`, `fuel oil`, `wood`) and a unique reference code used during CSV imports.
+A structured data model connects buildings (sites) → meters (compteurs). Each meter has an energy type (`electricity`, `gas`, `water`, `fuel oil`, `wood`) and a unique reference code used during CSV imports.
 
 ### Data Collection & Integration
 The platform supports multiple data ingestion methods:

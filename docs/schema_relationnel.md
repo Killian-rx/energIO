@@ -34,10 +34,7 @@
     │ annee_const.     │           │                       │
     └───────┬──────────┘           │                       │
             │                      │ déclenche (0,n)       │
-            │ contient (1,n)       │                       │
-            │                      │                       │
-            │                      │                       │
-            │                      |                       |
+            │ possède (1,n)         │                       │
             │                      │                       │
     ┌───────▼──────────────────────▼───────────────────────▼───┐
     │                      COMPTEUR                             │
@@ -81,11 +78,7 @@
 | crée                  | UTILISATEUR     | (0,n)   | (0,1)   | REGLE_ALERTE   |
 | traite                | UTILISATEUR     | (0,n)   | (0,1)   | ALERTE         |
 | importe               | UTILISATEUR     | (0,n)   | (0,1)   | IMPORT_LOG     |
-| contient              | SITE            | (1,n)   | (1,1)   | ZONE           |
-| appartient            | SITE            | (1,n)   | (1,1)   | EQUIPEMENT     |
-| héberge               | ZONE            | (0,n)   | (0,1)   | EQUIPEMENT     |
 | possède               | SITE            | (1,n)   | (1,1)   | COMPTEUR       |
-| mesure                | EQUIPEMENT      | (0,n)   | (0,1)   | COMPTEUR       |
 | enregistre            | COMPTEUR        | (1,n)   | (1,1)   | RELEVE         |
 | issu de               | RELEVE          | (0,n)   | (0,1)   | IMPORT_LOG     |
 | surveille (site)      | REGLE_ALERTE    | (0,n)   | (0,1)   | SITE           |
@@ -129,31 +122,9 @@ SITE (
     updated_at          TIMESTAMPTZ
 )
 
-ZONE (
-    id          PK  SERIAL,
-    site_id     FK → SITE(id)   NOT NULL,
-    nom         VARCHAR(200)    NOT NULL,
-    surface     NUMERIC(10,2),
-    usage       VARCHAR(100),
-    created_at  TIMESTAMPTZ
-)
-
-EQUIPEMENT (
-    id                  PK  SERIAL,
-    site_id             FK → SITE(id)   NOT NULL,
-    zone_id             FK → ZONE(id),
-    nom                 VARCHAR(200)    NOT NULL,
-    type_equipement     VARCHAR(50),
-    puissance_kw        NUMERIC(10,3),
-    date_installation   DATE,
-    actif               BOOLEAN,
-    created_at          TIMESTAMPTZ
-)
-
 COMPTEUR (
     id              PK  SERIAL,
     site_id         FK → SITE(id)           NOT NULL,
-    equipement_id   FK → EQUIPEMENT(id),
     nom             VARCHAR(200)            NOT NULL,
     type_energie    VARCHAR(30)             NOT NULL  {electricite, gaz, eau, fioul, bois, autre},
     type_compteur   VARCHAR(20)             {physique, virtuel},
@@ -224,44 +195,36 @@ ALERTE (
 ## Diagramme des dépendances (clés étrangères)
 
 ```
-UTILISATEUR ◄──────────────────────────────────────────────────────────────┐
-     │                                                                       │
-     ├──(gestionnaire_id)──► SITE ◄──(site_id)──┬── ZONE                    │
-     │                         │                 │     │                     │
-     │                         │                 └──(zone_id)                │
-     │                         │                       │                     │
-     │                    (site_id)              EQUIPEMENT                  │
-     │                         │                (site_id + zone_id)         │
-     │                         ▼                       │                     │
-     │                     COMPTEUR ◄──(equipement_id)─┘                    │
-     │                     (site_id)                                         │
-     │                         │                                             │
-     │                    (compteur_id)                                      │
-     │                         ▼                                             │
-     │                      RELEVE ──(import_id)──► IMPORT_LOG ─(importe_par)┘
-     │                                                                       │
-     ├──(created_by)──► REGLE_ALERTE ──(site_id)──► SITE                   │
-     │                      │         ──(compteur_id)──► COMPTEUR           │
-     │                      │                                               │
-     │                 (regle_id)                                           │
-     │                      ▼                                               │
-     └──(traitee_par)──► ALERTE ──(site_id)──► SITE                        │
-                                 ──(compteur_id)──► COMPTEUR                │
-                                 ──────────────────────────────────────────►┘
+UTILISATEUR ◄──────────────────────────────────────────────────────┐
+     │                                                               │
+     ├──(gestionnaire_id)──► SITE ◄──(site_id)──► COMPTEUR         │
+     │                                (site_id)       │             │
+     │                                           (compteur_id)      │
+     │                                                ▼             │
+     │                                             RELEVE ──(import_id)──► IMPORT_LOG ─(importe_par)┐
+     │                                                                                               │
+     ├──(created_by)──► REGLE_ALERTE ──(site_id)──► SITE                                           │
+     │                      │         ──(compteur_id)──► COMPTEUR                                   │
+     │                      │                                                                       │
+     │                 (regle_id)                                                                   │
+     │                      ▼                                                                       │
+     └──(traitee_par)──► ALERTE ──(site_id)──► SITE                                                │
+                                 ──(compteur_id)──► COMPTEUR                                        │
+                                 ────────────────────────────────────────────────────────────────►─┘
 ```
 
 ---
 
 ## Index définis
 
-| Index                          | Table    | Colonnes                        | Type   |
-|-------------------------------|----------|---------------------------------|--------|
-| idx_releve_compteur_date       | releve   | (compteur_id, date_releve DESC) | BTREE  |
-| idx_releve_date                | releve   | (date_releve DESC)              | BTREE  |
-| idx_compteur_site              | compteur | (site_id)                       | BTREE  |
-| idx_alerte_traitee             | alerte   | (traitee, created_at DESC)      | BTREE  |
-| idx_site_actif                 | site     | (actif)                         | BTREE  |
-| idx_regle_active               | regle_alerte | (active)                    | BTREE  |
+| Index                          | Table        | Colonnes                        | Type   |
+|--------------------------------|--------------|---------------------------------|--------|
+| idx_releve_compteur_date       | releve       | (compteur_id, date_releve DESC) | BTREE  |
+| idx_releve_date                | releve       | (date_releve DESC)              | BTREE  |
+| idx_compteur_site              | compteur     | (site_id)                       | BTREE  |
+| idx_alerte_traitee             | alerte       | (traitee, created_at DESC)      | BTREE  |
+| idx_site_actif                 | site         | (actif)                         | BTREE  |
+| idx_regle_active               | regle_alerte | (active)                        | BTREE  |
 
 ## Triggers
 

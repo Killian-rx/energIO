@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ShieldAlert, Plus, Pencil, Trash2, Power, Loader2 } from 'lucide-react';
+import { ShieldAlert, Plus, Pencil, Trash2, Power, Loader2, X } from 'lucide-react';
 import api from '../api/client';
 
-const TYPE_LABELS = { seuil_absolu: 'Seuil absolu', variation: 'Variation %', comparaison: 'Comparaison' };
+const TYPE_LABELS  = { seuil_absolu: 'Seuil absolu', variation: 'Variation %', comparaison: 'Comparaison' };
+const NIVEAU_LABEL = { info: 'Info', warning: 'Alerte', critical: 'Critique' };
 const NIVEAU_BADGE = { info: 'badge-info', warning: 'badge-warning', critical: 'badge-critical' };
 
 function RegleModal({ regle, sites, compteurs, onClose, onSaved }) {
@@ -62,7 +63,7 @@ function RegleModal({ regle, sites, compteurs, onClose, onSaved }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-lg font-semibold">{regle?.id ? 'Modifier la règle' : 'Nouvelle règle d\'alerte'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 rounded p-0.5"><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</p>}
@@ -82,8 +83,8 @@ function RegleModal({ regle, sites, compteurs, onClose, onSaved }) {
               <label className="label">Niveau</label>
               <select className="input" value={form.niveau} onChange={e => setForm(f => ({...f, niveau: e.target.value}))}>
                 <option value="info">Info</option>
-                <option value="warning">Warning</option>
-                <option value="critical">Critical</option>
+                <option value="warning">Alerte</option>
+                <option value="critical">Critique</option>
               </select>
             </div>
           </div>
@@ -169,7 +170,7 @@ export default function ReglesPage() {
     <div className="max-w-7xl space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Règles d'alerte</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Règles d'alerte</h1>
           <p className="text-gray-500 text-sm mt-1">{regles.filter(r=>r.active).length} actives sur {regles.length}</p>
         </div>
         <div className="flex items-center gap-3">
@@ -206,7 +207,7 @@ export default function ReglesPage() {
                   <td><span className="badge-gray">{TYPE_LABELS[r.type_regle]}</span></td>
                   <td className="font-mono text-xs text-gray-600">{formatCondition(r.type_regle, r.condition)}</td>
                   <td className="text-gray-500 text-sm">{r.site_nom || 'Tous'}</td>
-                  <td><span className={NIVEAU_BADGE[r.niveau]}>{r.niveau}</span></td>
+                  <td><span className={NIVEAU_BADGE[r.niveau]}>{NIVEAU_LABEL[r.niveau] ?? r.niveau}</span></td>
                   <td>
                     <span className={r.active ? 'badge-success' : 'badge-gray'}>
                       {r.active ? 'Active' : 'Inactive'}

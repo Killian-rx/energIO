@@ -101,6 +101,5 @@
 | US-30 | Connexion API OpenData fournisseurs énergie        | Haute     |
 | US-31 | Tableau de bord multi-sites comparatif             | Haute     |
 | US-32 | Export rapport PDF automatique mensuel             | Moyenne   |
-| US-33 | Gestion des zones et équipements (référentiel fin) | Moyenne   |
 | US-34 | Notifications email pour les alertes critiques     | Haute     |
 | US-35 | DJU (degrés-jours unifiés) pour normalisation météo| Faible    |

@@ -23,6 +23,9 @@ const SHORT_PERIODS = new Set(['1h','6h','24h','7d']);
 const ENERGIE_UNITS = {
   electricite: 'kWh', gaz: 'kWh', eau: 'm³', fioul: 'L', bois: 'kg', autre: 'kWh',
 };
+const ENERGIE_LABELS = {
+  electricite: 'Électricité', gaz: 'Gaz', eau: 'Eau', fioul: 'Fioul', bois: 'Bois', autre: 'Autre',
+};
 
 // Formateur Y-axis adaptatif
 function fmtY(v) {
@@ -169,8 +172,8 @@ export default function IndicateursPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <select className="input w-40" value={typeEnergie} onChange={e => setTypeEnergie(e.target.value)}>
-                  {['electricite','gaz','eau','fioul','bois'].map(t => (
-                    <option key={t} value={t}>{t}</option>
+                  {Object.entries(ENERGIE_LABELS).filter(([v]) => v !== 'autre').map(([v, l]) => (
+                    <option key={v} value={v}>{l}</option>
                   ))}
                 </select>
                 <PeriodSelector value={periode} onChange={setPeriode} />
@@ -186,7 +189,7 @@ export default function IndicateursPage() {
               </div>
               <div className="card">
                 <h3 className="text-sm font-semibold text-gray-700 mb-4">
-                  {typeEnergie} ({unit}) — {periode}
+                  {ENERGIE_LABELS[typeEnergie] ?? typeEnergie} ({unit}) — {periode}
                 </h3>
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={evolution?.donnees?.map(d => ({
@@ -198,7 +201,7 @@ export default function IndicateursPage() {
                     <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={fmtY} />
                     <Tooltip
                       contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }}
-                      formatter={v => [fmtVal(v, unit), typeEnergie]}
+                      formatter={v => [fmtVal(v, unit), ENERGIE_LABELS[typeEnergie] ?? typeEnergie]}
                     />
                     <Line type="monotone" dataKey="total" name={typeEnergie} stroke="#2563eb" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                   </LineChart>
@@ -223,7 +226,7 @@ export default function IndicateursPage() {
                       <div className="flex items-center gap-2 mb-3">
                         <AlertTriangle size={15} className="text-amber-500" />
                         <span className="font-semibold text-sm text-gray-900">{a.site_nom} — {a.compteur_nom}</span>
-                        <span className="badge-warning ml-auto">{a.type_energie}</span>
+                        <span className="badge-warning ml-auto">{ENERGIE_LABELS[a.type_energie] ?? a.type_energie}</span>
                       </div>
                       {a.anomalies.map((ano, i) => (
                         <div key={i} className="text-sm text-gray-700 bg-amber-50 rounded px-3 py-2 mb-2">
@@ -252,7 +255,7 @@ export default function IndicateursPage() {
                         <TendanceIcon label={t.tendance.label} />
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-gray-900 text-sm truncate">{t.compteur_nom}</p>
-                          <p className="text-xs text-gray-400">{t.site_nom} · {t.type_energie}</p>
+                          <p className="text-xs text-gray-400">{t.site_nom} · {ENERGIE_LABELS[t.type_energie] ?? t.type_energie}</p>
                         </div>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded ${
                           t.tendance.a > 50 ? 'bg-red-100 text-red-700' :

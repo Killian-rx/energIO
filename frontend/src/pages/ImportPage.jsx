@@ -84,7 +84,7 @@ export default function ImportPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Import / Export</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Import / Export</h1>
         <p className="text-gray-500 text-sm mt-1">Intégration de données depuis des fichiers CSV tiers</p>
       </div>
 
@@ -210,7 +210,9 @@ export default function ImportPage() {
                       <span className={
                         h.statut === 'termine' ? 'badge-success' :
                         h.statut === 'erreur'  ? 'badge-critical' : 'badge-warning'
-                      }>{h.statut}</span>
+                      }>
+                        {h.statut === 'termine' ? 'Terminé' : h.statut === 'erreur' ? 'Erreur' : 'En cours'}
+                      </span>
                     </td>
                   </tr>
                 ))}

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Users, Plus, Pencil, Trash2, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Loader2, CheckCircle, XCircle, X } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 
-const ROLE_BADGE = {
+const ROLE_BADGE  = {
   admin:        'bg-purple-100 text-purple-800',
   gestionnaire: 'bg-blue-100 text-blue-800',
   utilisateur:  'bg-gray-100 text-gray-700',
 };
+const ROLE_LABEL  = { admin: 'Admin', gestionnaire: 'Gestionnaire', utilisateur: 'Utilisateur' };
 
 function UserModal({ user, onClose, onSaved }) {
   const [form, setForm] = useState(user || {
@@ -38,7 +39,7 @@ function UserModal({ user, onClose, onSaved }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-lg font-semibold">{user?.id ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 rounded p-0.5"><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</p>}
@@ -116,7 +117,7 @@ export default function UtilisateursPage() {
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Utilisateurs</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Utilisateurs</h1>
           <p className="text-gray-500 text-sm mt-1">{users.length} compte{users.length !== 1 ? 's' : ''}</p>
         </div>
         <button onClick={() => setModal('new')} className="btn-primary">
@@ -148,7 +149,7 @@ export default function UtilisateursPage() {
                   </td>
                   <td className="text-gray-600 text-sm">{u.email}</td>
                   <td>
-                    <span className={`badge ${ROLE_BADGE[u.role]}`}>{u.role}</span>
+                    <span className={`badge ${ROLE_BADGE[u.role]}`}>{ROLE_LABEL[u.role] ?? u.role}</span>
                   </td>
                   <td>
                     {u.actif

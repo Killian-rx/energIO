@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Gauge, Plus, Pencil, Trash2, Loader2, Filter, Play, Square } from 'lucide-react';
+import { Gauge, Plus, Pencil, Trash2, Loader2, Filter, Play, Square, X } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,6 +10,9 @@ const ENERGIE_COLORS = {
   fioul:       'bg-gray-200 text-gray-800',
   bois:        'bg-amber-100 text-amber-800',
   autre:       'bg-gray-100 text-gray-700',
+};
+const ENERGIE_LABELS = {
+  electricite: 'Électricité', gaz: 'Gaz', eau: 'Eau', fioul: 'Fioul', bois: 'Bois', autre: 'Autre',
 };
 
 const ENERGIE_UNITS = {
@@ -81,7 +84,7 @@ function CompteurModal({ compteur, sites, onClose, onSaved }) {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-base font-semibold">{compteur?.id ? 'Modifier le compteur' : 'Nouveau compteur'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 rounded p-0.5"><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</p>}
@@ -101,8 +104,8 @@ function CompteurModal({ compteur, sites, onClose, onSaved }) {
             <div>
               <label className="label">Énergie *</label>
               <select className="input" value={form.type_energie} onChange={handleEnergieChange}>
-                {['electricite','gaz','eau','fioul','bois','autre'].map(t => (
-                  <option key={t} value={t}>{t}</option>
+                {Object.entries(ENERGIE_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>{l}</option>
                 ))}
               </select>
             </div>
@@ -338,7 +341,7 @@ export default function CompteurPage() {
                   <td className="text-gray-500">{c.site_nom}</td>
                   <td>
                     <span className={`badge ${ENERGIE_COLORS[c.type_energie]}`}>
-                      {c.type_energie}
+                      {ENERGIE_LABELS[c.type_energie] ?? c.type_energie}
                     </span>
                   </td>
                   <td className="font-mono text-xs text-gray-400">{c.reference || '—'}</td>

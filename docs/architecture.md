@@ -24,8 +24,8 @@ EnergIO est structurée en **architecture trois tiers** avec séparation stricte
 ┌───────────────────────────▼─────────────────────────────────┐
 │              Base de données PostgreSQL 14+                  │
 │  Base : energie_db | Utilisateur applicatif : energio_app   │
-│  Tables : utilisateur, site, zone, equipement, compteur,     │
-│           releve, regle_alerte, alerte, import_log           │
+│  Tables : utilisateur, site, compteur, releve,               │
+│           regle_alerte, alerte, import_log                   │
 └─────────────────────────────────────────────────────────────┘
 ```
 

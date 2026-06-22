@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft, Building2, MapPin, Ruler, Calendar, Gauge,
-  Bell, TrendingUp, TrendingDown, Minus, Pencil, Loader2,
+  Bell, TrendingUp, TrendingDown, Minus, Loader2,
   AlertTriangle, CheckCircle, Zap,
 } from 'lucide-react';
 import {
@@ -15,6 +15,9 @@ const TYPE_LABELS = { bureau: 'Bureau', erp: 'ERP', technique: 'Technique', loge
 
 const ENERGIE_UNITS = {
   electricite: 'kWh', gaz: 'kWh', eau: 'm³', fioul: 'L', bois: 'kg', autre: 'kWh',
+};
+const ENERGIE_LABELS = {
+  electricite: 'Électricité', gaz: 'Gaz', eau: 'Eau', fioul: 'Fioul', bois: 'Bois', autre: 'Autre',
 };
 
 function fmtY(v) {
@@ -190,11 +193,6 @@ export default function SiteDetailPage() {
             )}
           </div>
         </div>
-        {isGestionnaire && (
-          <Link to="/sites" className="btn-secondary text-xs py-1.5">
-            <Pencil size={13} /> Modifier
-          </Link>
-        )}
       </div>
 
       {/* KPIs */}
@@ -212,7 +210,7 @@ export default function SiteDetailPage() {
           value={kpis?.nb_compteurs ?? 0}
           icon={Gauge}
           iconColor="bg-blue-600"
-          sub={`${compteurs.filter(c => c.type_energie === 'gaz').length} gaz · ${compteurs.filter(c => c.type_energie === 'eau').length} eau`}
+          sub={`${compteurs.filter(c => c.type_energie === 'gaz').length} Gaz · ${compteurs.filter(c => c.type_energie === 'eau').length} Eau`}
         />
         <KpiCard
           label="Alertes en attente"
@@ -230,8 +228,8 @@ export default function SiteDetailPage() {
             <h2 className="text-sm font-semibold text-gray-700">Consommation</h2>
             <div className="flex items-center gap-2 flex-wrap">
               <select className="input w-36 text-xs py-1.5" value={typeEnergie} onChange={e => setTypeEnergie(e.target.value)}>
-                {['electricite','gaz','eau','fioul','bois'].map(t => (
-                  <option key={t} value={t}>{t}</option>
+                {Object.entries(ENERGIE_LABELS).filter(([v]) => v !== 'autre').map(([v, l]) => (
+                  <option key={v} value={v}>{l}</option>
                 ))}
               </select>
               <PeriodSelector value={periode} onChange={setPeriode} />
@@ -245,7 +243,7 @@ export default function SiteDetailPage() {
                 <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={fmtY} />
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }}
-                  formatter={v => [fmtVal(v, unit), typeEnergie]}
+                  formatter={v => [fmtVal(v, unit), ENERGIE_LABELS[typeEnergie] ?? typeEnergie]}
                 />
                 <Line
                   type="monotone" dataKey="total"
@@ -317,7 +315,7 @@ export default function SiteDetailPage() {
                 <td className="font-medium text-gray-900">{c.nom}</td>
                 <td>
                   <span className={`badge ${ENERGIE_COLORS[c.type_energie]}`}>
-                    {c.type_energie}
+                    {ENERGIE_LABELS[c.type_energie] ?? c.type_energie}
                   </span>
                 </td>
                 <td className="capitalize text-gray-500">{c.type_compteur}</td>
