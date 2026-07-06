@@ -1,8 +1,3 @@
-# Schéma relationnel — EnergIO
-*Méthode Merise — MCD + MLD*
-
----
-
 ## MCD — Modèle Conceptuel de Données
 
 ```
@@ -30,18 +25,18 @@
     │ code_postal      │  │ niveau           │   │ niveau           │
     │ surface          │  │ active           │   │ traitee          │
     │ type_batiment    │  └────────┬─────────┘   │ traitee_at       │
-    │ usage            │           │              └────────┬─────────┘
-    │ annee_const.     │           │                       │
-    └───────┬──────────┘           │                       │
-            │                      │ déclenche (0,n)       │
-            │ possède (1,n)         │                       │
-            │                      │                       │
+    │ usage            │           │             └────────┬─────────┘
+    │ annee_const.     │           │                      │
+    └───────┬──────────┘           │                      │
+            │                      │ déclenche (0,n)      │
+            │ possède (1,n)        │                      │
+            │                      │                      │
     ┌───────▼──────────────────────▼───────────────────────▼───┐
-    │                      COMPTEUR                             │
-    │───────────────────────────────────────────────────────────│
-    │ nom              │ type_energie    │ type_compteur         │
-    │ unite            │ reference       │ actif                 │
-    └───────────────────────────┬───────────────────────────────┘
+    │                      COMPTEUR                            │
+    │──────────────────────────────────────────────────────────│
+    │ nom              │ type_energie    │ type_compteur       │
+    │ unite            │ reference       │ actif               │
+    └───────────────────────────┬──────────────────────────────┘
                                 │
                                 │ enregistre (1,n)
                                 │
@@ -189,48 +184,3 @@ ALERTE (
     created_at      TIMESTAMPTZ
 )
 ```
-
----
-
-## Diagramme des dépendances (clés étrangères)
-
-```
-UTILISATEUR ◄──────────────────────────────────────────────────────┐
-     │                                                               │
-     ├──(gestionnaire_id)──► SITE ◄──(site_id)──► COMPTEUR         │
-     │                                (site_id)       │             │
-     │                                           (compteur_id)      │
-     │                                                ▼             │
-     │                                             RELEVE ──(import_id)──► IMPORT_LOG ─(importe_par)┐
-     │                                                                                               │
-     ├──(created_by)──► REGLE_ALERTE ──(site_id)──► SITE                                           │
-     │                      │         ──(compteur_id)──► COMPTEUR                                   │
-     │                      │                                                                       │
-     │                 (regle_id)                                                                   │
-     │                      ▼                                                                       │
-     └──(traitee_par)──► ALERTE ──(site_id)──► SITE                                                │
-                                 ──(compteur_id)──► COMPTEUR                                        │
-                                 ────────────────────────────────────────────────────────────────►─┘
-```
-
----
-
-## Index définis
-
-| Index                          | Table        | Colonnes                        | Type   |
-|--------------------------------|--------------|---------------------------------|--------|
-| idx_releve_compteur_date       | releve       | (compteur_id, date_releve DESC) | BTREE  |
-| idx_releve_date                | releve       | (date_releve DESC)              | BTREE  |
-| idx_compteur_site              | compteur     | (site_id)                       | BTREE  |
-| idx_alerte_traitee             | alerte       | (traitee, created_at DESC)      | BTREE  |
-| idx_site_actif                 | site         | (actif)                         | BTREE  |
-| idx_regle_active               | regle_alerte | (active)                        | BTREE  |
-
-## Triggers
-
-| Trigger                  | Table         | Événement     | Action                  |
-|--------------------------|---------------|---------------|-------------------------|
-| trg_utilisateur_updated  | utilisateur   | BEFORE UPDATE | set_updated_at()        |
-| trg_site_updated         | site          | BEFORE UPDATE | set_updated_at()        |
-| trg_compteur_updated     | compteur      | BEFORE UPDATE | set_updated_at()        |
-| trg_regle_updated        | regle_alerte  | BEFORE UPDATE | set_updated_at()        |
