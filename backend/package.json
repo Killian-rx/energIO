@@ -28,6 +28,9 @@
   "jest": {
     "testEnvironment": "node",
     "testMatch": ["**/tests/**/*.test.js"],
-    "collectCoverageFrom": ["src/services/**/*.js"]
+    "collectCoverageFrom": [
+      "src/services/**/*.js",
+      "src/middleware/**/*.js"
+    ]
   }
 }
